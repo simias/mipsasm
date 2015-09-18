@@ -48,7 +48,30 @@ pub mod syntax {
         Bltzal(Register, Label),
         J(Label),
         Jal(Label),
-        
+        Beq(Register, Register, Label),
+        Bne(Register, Register, Label),
+        Blez(Register, Label),
+        Bgtz(Register, Label),
+        Addi(Register, Register, i16),
+        Addiu(Register, Register, i16),
+        Slti(Register, Register, i16),
+        Sltiu(Register, Register, i16),
+        Andi(Register, Register, u16),
+        Ori(Register, Register, u16),
+        Xori(Register, Register, u16),
+        Lui(Register, u16),
+        Lb(Register, Register, i16),
+        Lh(Register, Register, i16),
+        Lwl(Register, Register, i16),
+        Lw(Register, Register, i16),
+        Lbu(Register, Register, i16),
+        Lhu(Register, Register, i16),
+        Lwr(Register, Register, i16),
+        Sb(Register, Register, i16),
+        Sh(Register, Register, i16),
+        Swl(Register, Register, i16),
+        Sw(Register, Register, i16),
+        Swr(Register, Register, i16),
 
         // Labels
         Global(&'static str),
@@ -175,7 +198,7 @@ impl Assembler {
 
         // First we map the labels
         try!(self.parse_labels(instructions));
-        
+
         for &i in instructions {
             try!(self.assemble_instruction(i));
         }
@@ -443,7 +466,156 @@ impl Assembler {
                 self.emit(MachineCode::op(0b000011)
                           .imm_jump(i));
             }
-            
+            Beq(r0, r1, l) => {
+                let i = try!(self.branch_target(l));
+
+                self.emit(MachineCode::op(0b000100)
+                          .s(r0)
+                          .t(r1)
+                          .imm_se(i));
+            }
+            Bne(r0, r1, l) => {
+                let i = try!(self.branch_target(l));
+
+                self.emit(MachineCode::op(0b000101)
+                          .s(r0)
+                          .t(r1)
+                          .imm_se(i));
+            }
+            Blez(r0, l) => {
+                let i = try!(self.branch_target(l));
+
+                self.emit(MachineCode::op(0b000110)
+                          .s(r0)
+                          .imm_se(i));
+            }
+            Bgtz(r0, l) => {
+                let i = try!(self.branch_target(l));
+
+                self.emit(MachineCode::op(0b000111)
+                          .s(r0)
+                          .imm_se(i));
+            }
+            Addi(r0, r1, i) => {
+                self.emit(MachineCode::op(0b001000)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Addiu(r0, r1, i) => {
+                self.emit(MachineCode::op(0b001001)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Slti(r0, r1, i) => {
+                self.emit(MachineCode::op(0b001010)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Sltiu(r0, r1, i) => {
+                self.emit(MachineCode::op(0b001011)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Andi(r0, r1, u) => {
+                self.emit(MachineCode::op(0b001100)
+                          .t(r0)
+                          .s(r1)
+                          .imm(u));
+            }
+            Ori(r0, r1, u) => {
+                self.emit(MachineCode::op(0b001101)
+                          .t(r0)
+                          .s(r1)
+                          .imm(u));
+            }
+            Xori(r0, r1, u) => {
+                self.emit(MachineCode::op(0b001110)
+                          .t(r0)
+                          .s(r1)
+                          .imm(u));
+            }
+            Lui(r0, u) => {
+                self.emit(MachineCode::op(0b001111)
+                          .t(r0)
+                          .imm(u));
+            }
+            Lb(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100000)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lh(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100001)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lwl(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100010)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lw(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100011)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lbu(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100100)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lhu(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100101)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Lwr(r0, r1, i) => {
+                self.emit(MachineCode::op(0b100110)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Sb(r0, r1, i) => {
+                self.emit(MachineCode::op(0b101000)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Sh(r0, r1, i) => {
+                self.emit(MachineCode::op(0b101001)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Swl(r0, r1, i) => {
+                self.emit(MachineCode::op(0b101010)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Sw(r0, r1, i) => {
+                self.emit(MachineCode::op(0b101011)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+            Swr(r0, r1, i) => {
+                self.emit(MachineCode::op(0b101110)
+                          .t(r0)
+                          .s(r1)
+                          .imm_se(i));
+            }
+
             // Pseudo instructions
             Nop =>
                 try!(self.assemble_instruction(Sll(R0, R0, 0))),
@@ -500,6 +672,10 @@ impl MachineCode {
 
     fn is_bgez(self, is_bgez: bool) -> MachineCode {
         MachineCode(self.0| ((is_bgez as u32) << 16))
+    }
+
+    fn imm(self, v: u16) -> MachineCode {
+        MachineCode(self.0 | (v as u32))
     }
 
     fn imm_se(self, v: i16) -> MachineCode {
