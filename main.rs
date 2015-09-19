@@ -36,6 +36,7 @@ fn main() {
             Li(T7, 0x0000ffff),
 
             Global("end"),
+
             J(Label::Global("end")),
 
             La(RA, Label::Global("end")),
