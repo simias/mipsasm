@@ -80,6 +80,8 @@ pub mod syntax {
         // Pseudo-instructions
         Nop,
         Move(Register, Register),
+        Li(Register, u32),
+        La(Register, Label),
     }
 
     impl Instruction {
@@ -87,6 +89,20 @@ pub mod syntax {
         pub fn bytes(&self) -> u32 {
             match *self {
                 Local(_) | Global(_) => 0,
+                Li(_, v) => {
+                    let mut b = 0;
+
+                    if v & 0xffff0000 != 0{
+                        b += 4;
+                    }
+
+                    if v & 0xffff != 0 || v == 0 {
+                        b += 4;
+                    }
+
+                    b
+                }
+                La(..) => 8,
                 _ => 4,
             }
         }
@@ -621,6 +637,29 @@ impl Assembler {
                 try!(self.assemble_instruction(Sll(R0, R0, 0))),
             Move(r0, r1) =>
                 try!(self.assemble_instruction(Addu(r0, r1, R0))),
+            Li(r0, v) => {
+                let hi = (v >> 16) as u16;
+                let lo = v as u16;
+
+                if hi != 0 {
+                    try!(self.assemble_instruction(Lui(r0, hi)));
+
+                    if lo != 0 {
+                        try!(self.assemble_instruction(Ori(r0, r0, lo)));
+                    }
+                } else {
+                    try!(self.assemble_instruction(Ori(r0, R0, lo)));
+                }
+            }
+            La(r0, l) => {
+                let loc = try!(self.label_address(l));
+
+                let hi = (loc >> 16) as u16;
+                let lo = loc as u16;
+
+                try!(self.assemble_instruction(Lui(r0, hi)));
+                try!(self.assemble_instruction(Ori(r0, R0, lo)));
+            }
 
             // Labels should already have been handled
             Local(..) | Global(..) => (),

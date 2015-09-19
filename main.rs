@@ -3,7 +3,7 @@ mod assembler;
 use assembler::syntax::*;
 
 fn main() {
-    let mut asm = assembler::Assembler::new(0x80010000);
+    let mut asm = assembler::Assembler::new(0);
 
     let r =
         asm.assemble(&[
@@ -27,7 +27,19 @@ fn main() {
             Local("loop"),
 
             Jal(Label::Global("main")),
-            Nop
+            Nop,
+
+            Li(T3, 0x80000000),
+            Li(T4, 0x80000001),
+            Li(T5, 0x00000002),
+            Li(T6, 0x00000000),
+            Li(T7, 0x0000ffff),
+
+            Global("end"),
+            J(Label::Global("end")),
+
+            La(RA, Label::Global("end")),
+
             ]);
 
     println!("Assembly result: {:?}", r);
